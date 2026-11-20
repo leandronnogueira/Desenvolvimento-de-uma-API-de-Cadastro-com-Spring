@@ -1,0 +1,32 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: cadastrocarros-db
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: cadastrocarros
+    ports:
+      - "3306:3306"
+    volumes:
+      - dados-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: cadastrocarros-api
+    environment:
+      DB_URL: jdbc:mariadb://db:3306/cadastrocarros
+      DB_USER: root
+      DB_PASSWORD: root
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dados-db:
